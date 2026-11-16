@@ -7,5 +7,6 @@ import 'primeicons/primeicons.css'
 import 'chart.js/auto'
 import './styles.css'
 import './brand/shell.css'
+import './brand/estabilidade.css'
 import App from './App'
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>)
