@@ -26,11 +26,13 @@ function Login({onLogin}:{onLogin:(user:AuthUser)=>void}) {
   const [email,setEmail]=useState('')
   const [password,setPassword]=useState('')
   const [newPassword,setNewPassword]=useState('')
+  const [confirmPassword,setConfirmPassword]=useState('')
   const [requiresChange,setRequiresChange]=useState(false)
   const [busy,setBusy]=useState(false)
   const [error,setError]=useState('')
   async function submit(e:React.FormEvent) {
     e.preventDefault()
+    if(requiresChange&&newPassword!==confirmPassword){setError('A confirmação da nova senha não confere.');return}
     setBusy(true);setError('')
     try {
       const user=await login(email,password,requiresChange?newPassword:undefined)
@@ -47,23 +49,25 @@ function Login({onLogin}:{onLogin:(user:AuthUser)=>void}) {
     <div className="login-side">
       <div className="brand-mark"><img src="/brand/unilog_express_logo_branco.svg" alt="Unilog Express"/><span className="product-chip">HEADCOUNT G5</span></div>
       <div><small className="overline-dash">GESTÃO DE PESSOAS</small><h1>O quadro do G5 <span className="accent">em um só lugar</span>, sempre atualizado.</h1><p>Indicadores operacionais integrados à base de cadastros, com acesso restrito e atualização controlada.</p></div>
+      <div className="login-proof"><span><i className="pi pi-shield"/> Acesso protegido</span><span><i className="pi pi-lock"/> Credenciais seguras</span></div>
     </div>
     <div className="login-form-wrap"><Card className="login-card">
-      <small className="eyebrow overline-dash">ACESSO</small><h2>Bem-vindo de volta</h2>
-      <p>Entre com a conta cadastrada na planilha de controle de acesso.</p>
+      <small className="eyebrow overline-dash">{requiresChange?'PRIMEIRO ACESSO':'ACESSO'}</small><h2>{requiresChange?'Crie sua própria senha':'Bem-vindo de volta'}</h2>
+      <p>{requiresChange?'A senha recebida é temporária. Defina uma nova senha para liberar seu acesso.':'Entre com o usuário cadastrado pela administração.'}</p>
       <form onSubmit={submit}>
         <label>E-mail</label>
-        <InputText type="email" required value={email} onChange={e=>{setEmail(e.target.value);setRequiresChange(false)}} placeholder="seu.email@empresa.com" autoComplete="email"/>
+        <InputText type="email" required value={email} onChange={e=>{setEmail(e.target.value);setRequiresChange(false)}} placeholder="nome@empresa.com.br" autoComplete="email"/>
         <label>Senha</label>
-        <Password value={password} onChange={e=>setPassword(e.target.value)} feedback={false} toggleMask inputClassName="password-input" autoComplete="current-password" required/>
-        {requiresChange&&<><Message severity="info" text="Primeiro acesso: cadastre uma senha definitiva com pelo menos 10 caracteres."/>
+        <Password value={password} onChange={e=>setPassword(e.target.value)} feedback={false} toggleMask inputClassName="password-input" placeholder="Digite sua senha" autoComplete="current-password" required/>
+        {requiresChange&&<>
           <label>Nova senha</label>
-          <Password value={newPassword} onChange={e=>setNewPassword(e.target.value)} feedback={false} toggleMask inputClassName="password-input" autoComplete="new-password" required minLength={10}/>
+          <Password value={newPassword} onChange={e=>setNewPassword(e.target.value)} feedback={false} toggleMask inputClassName="password-input" placeholder="Mínimo de 10 caracteres" autoComplete="new-password" required minLength={10}/>
+          <label>Confirmar nova senha</label>
+          <Password value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} feedback={false} toggleMask inputClassName="password-input" placeholder="Repita a nova senha" autoComplete="new-password" required minLength={10}/>
         </>}
         {error&&<Message severity="error" text={error}/>}
         <Button type="submit" label={requiresChange?'Concluir primeiro acesso':'Entrar'} icon="pi pi-arrow-right" iconPos="right" loading={busy}/>
       </form>
-      <small>O acesso exige cadastro ativo em CAD_USUARIOS e módulos autorizados.</small>
     </Card></div>
     <footer className="login-legal">© {new Date().getFullYear()} Unilog Express. Todos os direitos reservados.</footer>
   </div>

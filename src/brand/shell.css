@@ -94,3 +94,8 @@ body { color: var(--unilog-cinza); }
 .sidebar-product strong { white-space: nowrap; font-size: 11px; letter-spacing: .1em; }
 .sidebar-logo { width: 68px; }
 .login-page .login-card .p-password .p-icon-field { flex: 1 1 auto; width: 100%; }
+
+/* Selos do login (iguais ao Extra: "Acesso protegido" e "Credenciais seguras"). */
+.login-proof { display: flex; flex-wrap: wrap; gap: 16px; font-size: 11px; font-weight: 600; color: var(--unilog-cinza-20); }
+.login-proof span { display: flex; align-items: center; gap: 7px; }
+.login-proof i { font-size: 13px; color: #fff; }
