@@ -29,3 +29,16 @@
 O **front publicado não oferece modo demo em produção**. O Apps Script não recebe requisições diretas do navegador. Não existe necessidade de criar outro banco para armazenar contas ou colaboradores. O endpoint do Apps Script pode ser público na camada Google, mas a comunicação é protegida por segredo de alta entropia verificado em todas as chamadas; trate o URL como dado de infraestrutura e restrinja logs.
 
 Antes do uso real, rever as regras de proteção contra tentativas repetidas de login, a guarda dos hashes na planilha e o algoritmo de derivação de senha.
+
+## Provisionar um usuário: erro de propriedades temporárias
+
+A função `applyPendingUserPassword()` **não lê senhas na planilha**. Ela busca duas propriedades do projeto Apps Script em **Configurações do projeto → Propriedades do script**:
+
+- `AUTH_PENDING_EMAIL`: o e-mail exatamente igual ao cadastrado em `CAD_USUARIOS!A2:A`.
+- `AUTH_PENDING_PASSWORD`: uma **senha provisória** de 10 a 256 caracteres, escolhida pelo administrador; nunca digitá-la nas células nem enviar por chat.
+
+Antes de executar a função, preencha na aba `CAD_USUARIOS` os campos `PERFIL` (OWNER, ADMIN ou VISUALIZADOR), `MODULOS` (ex.: `M04;M05`, ou `*` somente para acesso expressamente autorizado a todos) e `ATIVO` (`SIM`). Não atribuir privilégios por padrão.
+
+**Sequência:** salve as duas propriedades, execute `applyPendingUserPassword()` no editor e verifique que `SENHA_HASH`, `SALT`, `EXIGE_TROCA_SENHA` e `ULTIMA_ALTERACAO` foram preenchidas. As propriedades `AUTH_PENDING_*` são removidas pela função mesmo que ela falhe; em caso de erro, cadastre **novamente ambas** antes de repetir. O script mais recente indica qual propriedade está ausente, mas as mudanças no GitHub só chegam ao Apps Script depois que o arquivo do projeto for atualizado manualmente.
+
+Os nomes `AUTH_PENDING_EMAIL` e `AUTH_PENDING_PASSWORD` **não** são variáveis do Cloudflare. Já os segredos de integração do Cloudflare são `APPS_SCRIPT_URL`, `APPS_SCRIPT_GATEWAY_TOKEN` e `APP_SESSION_SECRET`.
