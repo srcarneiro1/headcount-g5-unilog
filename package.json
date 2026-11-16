@@ -9,14 +9,14 @@
     "predev:demo": "node scripts/build-unilog-theme.mjs",
     "dev:demo": "VITE_DEMO_MODE=true vite",
     "prebuild": "node scripts/build-unilog-theme.mjs",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && tsc -p tsconfig.functions.json && vite build",
     "test": "vitest run",
     "preview": "vite preview",
     "pages:dev": "wrangler pages dev dist --compatibility-date=2026-11-01"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.0",
     "chart.js": "^4.5.0",
+    "jose": "^6.0.8",
     "primeicons": "^7.0.0",
     "primereact": "^10.9.7",
     "react": "^19.1.0",

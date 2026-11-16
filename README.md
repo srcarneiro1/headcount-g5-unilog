@@ -1,76 +1,95 @@
 # Headcount G5 · UNILOG
 
-Base independente para consulta e análise do headcount G5, com identidade visual inspirada no Extra Cost Control e arquitetura adaptada ao problema de gestão de pessoas. **Não é um fork do BI Logístico.**
+Painel independente para consulta e análise do quadro G5. Visual inspirado no **Extra Cost Control**; código organizado especificamente para headcount. **Sem banco externo**: a origem operacional e os usuários ficam na planilha Google Sheets `COLABORADORES G5`.
 
-> **Estado:** scaffold de desenvolvimento. Ainda não é uma aplicação publicada ou homologada. Os dados exibidos pelo modo de demonstração são inteiramente fictícios. Nenhum registro real de colaboradores integra este repositório.
+> Base de desenvolvimento, não homologada em produção. O modo de demonstração usa somente registros fictícios. Nenhuma pessoa real, senha, hash ou token está no repositório.
 
-## Escopo inicial
+## Arquitetura
 
-- Visão geral: efetivo, pessoas trabalhando, demais situações, admissões do mês, alocações e consistência cadastral.
-- Colaboradores: listagem, pesquisa, filtros e situação funcional.
-- Supervisão: equipes e distribuição por liderança, sem assumir um centro de custo exclusivo por supervisor.
-- Distribuições: cliente, cargo, módulo, turno, centro de custo e tempo de casa.
-- Organograma: representação **indicativa** baseada em supervisor e encarregado informados.
+```text
+Navegador (React / PrimeReact, cookie de sessão HttpOnly)
+   ↓
+Cloudflare Pages Functions (login, sessão JWT, API)
+   ↓ token do gateway exclusivo do servidor
+Google Apps Script (autenticação, perfis, filtragem por módulo)
+   ↓
+Google Sheets · COLABORADORES G5
+  ├─ Cadastros (fonte de colaboradores, somente leitura)
+  ├─ Dados (data de atualização)
+  └─ CAD_USUARIOS (controle de acesso e hashes de senhas)
+```
 
-**Fora do escopo:** catraca; controle de acesso físico; folha de pagamento; edição de cadastros na planilha. Os módulos de escaninhos e vestiários podem ser considerados no futuro, mas não foram incluídos nesta entrega.
+O gateway só envia dados depois do login. O Apps Script revalida `ATIVO`, `PERFIL` e `MODULOS` da conta em cada consulta. **Nunca** coloque a URL/token do Apps Script no React nem publique a planilha na internet.
 
-## Como executar
+## Telas
 
-Requisitos: Node.js 22+, npm.
+Visão geral, Colaboradores, Supervisão, Distribuições e Organograma indicativo. **Sem catraca.** A planilha de colaboradores não é editada pelo painel nesta versão; a autenticação tem um fluxo separado e controlado de provisionamento/troca de senha.
+
+## Executar localmente
+
+Node.js 22+ e npm:
 
 ```bash
 npm install
 npm run dev:demo
 ```
 
-Abra `http://localhost:5173`. `dev:demo` exibe uma amostra sintética e não acessa a planilha. Para testar o modo autenticado, configure `.env` e use `npm run dev`. A API real (`/api/bootstrap`) exige Cloudflare Pages Functions; para simular o ambiente local completo, use o comando `npm run build` seguido de `npm run pages:dev`.
+Abre `http://localhost:5173`, com registros fictícios e sem acesso à planilha.
 
-**Scripts:** `npm run dev`, `npm run dev:demo`, `npm run test`, `npm run build`, `npm run pages:dev`.
+Para simular a aplicação integrada ao gateway Cloudflare, configure o arquivo **local** `.dev.vars` com base em `.dev.vars.example`, execute `npm run build` e `npm run pages:dev` (porta indicada pelo Wrangler). Não versione `.dev.vars`.
 
-Não existe `package-lock.json` porque o ambiente de geração não teve acesso ao registro npm. Execute `npm install` e versione o lockfile gerado antes de substituir o comando da CI por `npm ci`. O GitHub Actions validou `npm install`, `npm test` e `npm run build` com Node.js 22 em 16/11/2026. O deploy real e a integração autenticada ainda não foram homologados.
+Validação:
 
-## Tecnologias
-
-React, TypeScript, Vite, React Router, PrimeReact, Chart.js, Cloudflare Pages Functions, Supabase Auth e Google Apps Script como ponte **somente de leitura** do Google Sheets. Componentes visuais seguem a linguagem cromática do Extra Cost; o tema PrimeReact é gerado por `scripts/build-unilog-theme.mjs` antes do desenvolvimento e do build, a partir do tema Lara Light Indigo oficial, substituindo sua paleta. Nenhuma regra interna do BI foi copiada.
-
-## Organização
-
-```text
-src/
-  App.tsx               # Shell, autenticação visual e rotas
-  pages/                # Telas independentes
-  ui/common.tsx         # Cards, filtros e gráficos compartilhados
-  lib/metrics.ts        # Regras puras de métricas
-  lib/metrics.test.ts   # Testes das regras
-  lib/auth.ts           # Cliente Supabase
-  lib/api.ts            # Cliente HTTP /api/bootstrap
-  data/demo.ts          # Amostra fictícia
-  types.ts              # Tipagem do contrato
-functions/api/bootstrap.ts  # Gateway de autenticação e autorização
-apps-script/HeadcountApi.gs  # Leitura protegida da planilha
-supabase/migrations/        # Tabela e política de acesso isolada
-docs/                       # Arquitetura, decisões e transição
-.github/workflows/ci.yml    # Testes e build no GitHub Actions
+```bash
+npm test
+npm run build
 ```
 
-## Fonte de dados
+O tema visual PrimeReact é gerado no `prebuild`/`predev` e não deve ser versionado. A CI GitHub Actions executa instalação, testes e build. Não existe `package-lock.json` no scaffold inicial; gerar e versionar antes de substituir `npm install` por `npm ci`.
 
-A origem prevista é a planilha **COLABORADORES G5**, aba **Cadastros** (22 colunas). O Apps Script utiliza somente campos úteis ao headcount: matrícula, nome, cargo, área, admissão, centro de custo, situação, alocação, horário/turno, supervisor, encarregado, módulo e processo. **CPF, telefone, nascimento e outras informações não são retornadas pela API.** A ponte faz leitura das colunas da aba para construir o payload sanitizado; ela não grava ou altera células.
+## Implantação no Cloudflare Pages
 
-A coluna **Status** contém valores como `Trabalhando`, `Afastado`, `Auxílio Doença`, `Verificar` e `Tarefa Sumiço`. O KPI de pessoas trabalhando conta apenas `Trabalhando`. As demais situações ficam agrupadas, **não são interpretadas automaticamente como desligamento**. A aba `Senior` poderá apoiar conciliação futura, mas não é usada para sobrescrever dados nesta fase.
+Conecte `srcarneiro1/headcount-g5-unilog` usando Git integration. Configure:
 
-## Configuração real (sem expor segredos)
+| Campo | Valor |
+| --- | --- |
+| Production branch | `main` |
+| Framework | React (Vite) |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | raiz do repositório |
+| NODE_VERSION | `22` |
 
-1. Configure um projeto Supabase Auth, preferencialmente com inscrição pública desabilitada, e registre os usuários autorizados.
-2. Execute **depois de revisar** `supabase/migrations/001_headcount_access.sql` no SQL Editor do projeto Supabase. Crie autorizações explícitas por usuário; `active` é `false` por padrão.
-3. Preencha as variáveis públicas de `.env.example` num arquivo `.env` **local**, sem versioná-lo.
-4. Crie um projeto Apps Script separado, com o conteúdo de `apps-script/HeadcountApi.gs`. Nas *Script Properties*, configure `SPREADSHEET_ID` e `HEADCOUNT_API_TOKEN` aleatório e longo. Publique como Web App, executado pelo proprietário e acessível pela ponte.
-5. No Cloudflare Pages, configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `HEADCOUNT_API_URL` e `HEADCOUNT_API_TOKEN` como variáveis/segredos do ambiente de Functions. **O token da ponte nunca deve ter prefixo `VITE_`.** Defina output build `dist` e função sob `/api/bootstrap`.
-6. Autorize usuários na tabela `headcount_access`. A propriedade `modules` deve conter módulos explícitos (ex.: `M04`, `M05`) ou `*` para acesso a todos. Vetor vazio implica acesso negado.
-7. Faça deploy de **Preview** e verifique 401 sem sessão, 403 sem autorização, filtragem por módulos, CSV e visualização mobile antes de publicar produção.
+Configure os **três segredos** em *Workers & Pages → projeto → Settings → Variables and Secrets*, em Production e nos Previews que precisam acessar a integração. A mudança de segredo exige nova publicação:
 
-O método inicial de integração por Apps Script deve passar por revisão de segurança e limites de uso antes de operação corporativa. A autenticação da tela não substitui a autorização do endpoint.
+| Secret | Conteúdo |
+| --- | --- |
+| `APPS_SCRIPT_URL` | URL da implantação `/exec` do Apps Script isolado de Headcount |
+| `APPS_SCRIPT_GATEWAY_TOKEN` | token longo, exclusivo deste projeto, igual à Script Property `GATEWAY_TOKEN` |
+| `APP_SESSION_SECRET` | segredo independente com pelo menos 32 caracteres aleatórios, assina cookies JWT no Cloudflare |
 
-## Continuidade
+**Nenhuma variável `VITE_SUPABASE_*` ou serviço de banco é usado.** A interface é publicada mesmo sem os segredos; o login apenas retorna erro de configuração até que a ponte exista.
 
-Leia [CLAUDE.md](CLAUDE.md) e [docs/ARQUITETURA.md](docs/ARQUITETURA.md) antes de alterar o projeto. Mudanças devem preservar o isolamento do BI Logístico e Extra Cost, sem alterações nos repositórios de origem.
+## Configurar o Apps Script e os usuários
+
+1. Crie um projeto Apps Script novo, cole `apps-script/HeadcountApi.gs`, sem alterar o Apps Script do Extra Cost.
+2. Em *Project Settings → Script properties*, configure `SPREADSHEET_ID` com o ID de `COLABORADORES G5` e `GATEWAY_TOKEN` com o mesmo valor do segredo `APPS_SCRIPT_GATEWAY_TOKEN` do Cloudflare.
+3. Execute manualmente `setupHeadcountAuthSheet()` **somente depois de autorizar a criação da aba** `CAD_USUARIOS`. A função cria a aba de usuários (se não existir) e o segredo `AUTH_PASSWORD_PEPPER` em Script Properties; não altera `Cadastros`.
+4. Preencha manualmente uma linha em `CAD_USUARIOS`, com `EMAIL`, `NOME`, `PERFIL` (`OWNER`, `ADMIN` ou `VISUALIZADOR`), `MODULOS` (`*` ou `M04;M05`) e `ATIVO` (`SIM`). Deixe `SENHA_HASH`/`SALT` vazios inicialmente. O perfil sem módulos não tem acesso.
+5. Temporariamente em *Script properties*, configure `AUTH_PENDING_EMAIL` e `AUTH_PENDING_PASSWORD` (senha forte de 10+ caracteres). Execute `applyPendingUserPassword()`. A função grava somente o hash com salt na aba, exige alteração da senha no primeiro login e apaga as propriedades temporárias, mesmo em caso de falha.
+6. Publique *Deploy → New deployment → Web app* executando como proprietário. O Web App precisa aceitar chamadas do gateway; o acesso não depende do login Google do usuário final, e o segredo é validado a cada chamada.
+7. Copie a URL `/exec` para o segredo `APPS_SCRIPT_URL` no Cloudflare. Faça um novo deploy.
+
+A aba `CAD_USUARIOS` contém hashes de senhas e permissões: restrinja o acesso de edição e visualização da planilha. Esse esquema segue o fluxo atual do Extra Cost, cujo hash iterativo de SHA-256 com pepper merece revisão para uma KDF de senha moderna antes de uso ampliado. Também devem ser definidos limites de tentativas de login no Cloudflare.
+
+## Homologação obrigatória
+
+- Sem sessão: `/api/bootstrap` retorna 401.
+- Usuário inativo ou sem módulos: autenticação negada ou leitura 403.
+- Perfil limitado a `M04`: nenhum colaborador de outro módulo no retorno.
+- CPF, telefone e nascimento nunca são retornados pela API.
+- Atualização dos indicadores confere com a aba `Cadastros` para o mesmo recorte.
+- Troca obrigatória de senha no primeiro acesso, logout e expiração de sessão funcionam.
+- Cloudflare Preview protegido antes de habilitar usuários reais em produção.
+
+Consulte [docs/ARQUITETURA.md](docs/ARQUITETURA.md), [docs/INTEGRACAO.md](docs/INTEGRACAO.md) e [CLAUDE.md](CLAUDE.md) para desenvolvimento no Claude.

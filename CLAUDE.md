@@ -1,38 +1,38 @@
-# Instruções de continuidade · Claude / colaboradores
+# Continuidade do Headcount G5 — instruções ao Claude
 
-Projeto: `srcarneiro1/headcount-g5-unilog`.
+Repositório `srcarneiro1/headcount-g5-unilog`. Stack: React 19, TypeScript, Vite, PrimeReact, Cloudflare Pages Functions e Google Apps Script/Sheets.
 
-## Objetivo
-Desenvolver o Headcount G5 como produto independente. Extra Cost Control fornece **referência visual**, não arquitetura a copiar. BI Logístico V2 serve apenas de histórico de escolhas tecnológicas, **não de base de código**. Preserve a separação entre apresentação, regras de negócio e integração de dados. Não inclua nenhuma função da catraca.
+## Fonte de verdade da arquitetura
 
-## Situação atual
-- Scaffold React/TypeScript/Vite/PrimeReact com telas de headcount e demo sintética.
-- Fonte real planejada: Google Sheets `COLABORADORES G5`, aba `Cadastros`.
-- Gateway `/api/bootstrap` autentica no Supabase, consulta autorização com RLS e consome Apps Script via segredo no servidor.
-- A aplicação está em **modo consulta**. Não habilitar criação/edição/exclusão sem definição expressa das regras de governança.
-- O GitHub Actions passou em `npm install`, `npm test` e `npm run build` (Node 22, 16/11/2026). O deploy e a integração com a planilha real não foram homologados. Próxima tarefa técnica: gerar e versionar `package-lock.json`, validar Pages Functions e testar a ponte.
+**Não introduzir Supabase, Firebase, PostgreSQL nem outro banco de dados.** A fonte de registros, usuários e permissões é `COLABORADORES G5`, com `Cadastros`, `Dados` e `CAD_USUARIOS`. O modelo de autenticação segue a estrutura do Extra Cost: autenticação verificada pelo Apps Script e sessão assinada em cookie HttpOnly no Cloudflare. Não modificar o projeto Extra Cost.
 
-## Invariantes
-1. Não versionar dados reais, CPF, nascimento, telefone, senhas, tokens, chaves, exports de colaboradores ou `.env`.
-2. Nunca expor `HEADCOUNT_API_TOKEN` no frontend nem chamar Apps Script diretamente pelo navegador.
-3. Recusar dados sem sessão Supabase válida e `headcount_access.active=true`; acesso por módulos deve ser explícito.
-4. Não equiparar todas as situações que não são `Trabalhando` a desligamento; evitar inferências não definidas pela gestão.
-5. Manter testes para `metrics.ts` e acrescentar testes de autorização/transformação no backend.
-6. Preservar a planilha original sem alterações e sem criar escrita na ponte.
-7. Não modificar os repositórios `bi-logistico-v2` e `extra-cost-control-unilog`.
-8. Antes de publicar, conferir regras de RH, autorização, coleta mínima de dados, responsividade, acessibilidade e segurança.
+O projeto é de consulta. A autorização por módulos é imposta no **Apps Script**, ao reler o usuário na aba `CAD_USUARIOS` a cada solicitação. Nunca confiar em módulos informados pelo navegador ou no cookie como autorização atual. Ver `docs/ARQUITETURA.md`.
 
-## Próximas melhorias prioritárias
-- Gerar e versionar lockfile, migrar CI para `npm ci` e manter npm install/build/test em Node 22.
-- Refatorar `src/App.tsx` e `src/ui/common.tsx` se crescerem, extraindo shell e componentes especializados.
-- Testar a ponte do Apps Script contra implantação real, inclusive redirecionamentos, falhas e cotas.
-- Implementar paginação mobile verdadeira e virtualização para bases grandes.
-- Ampliar validações de registros duplicados e conciliar status com a aba `Senior` **somente após definir precedência**.
-- Definir especificação dos indicadores: HC contratado/realizado, vagas, corte por competência, movimentações e desligamentos, se houver fontes confiáveis.
-- Desenvolver testes de integração, observabilidade sem PII e proteção contra abuso.
+## Estrutura
 
-## Critério de aceite
-A versão não estará pronta para uso operacional até passar em `npm test`, `npm run build`, validação de acesso 401/403, comparação de indicadores com a planilha, testes de não exposição de PII e aceite do responsável pelo processo.
+- `src/pages`: Home, Employees, Supervision, Analytics, OrgChart.
+- `src/lib/metrics.ts` e `metrics.test.ts`: métricas puras e testadas.
+- `src/lib/auth.ts`: chamadas de login, sessão e logout ao mesmo domínio.
+- `functions/_auth.ts`: cookies JWT via `jose` (8h, HttpOnly, Secure, SameSite=Lax).
+- `functions/_gateway.ts`: Apps Script HTTPS via segredo de servidor.
+- `functions/api/auth/*`: login, estado da sessão e logout.
+- `functions/api/bootstrap.ts`: dados filtrados do Headcount.
+- `apps-script/HeadcountApi.gs`: autenticação, acesso à aba `CAD_USUARIOS`, leitura minimizada de `Cadastros`; senha inicial provisionada manualmente por Script Properties.
+- `src/data/demo.ts`: apenas dados fictícios; nunca em produção.
 
-## Tema e identidade visual
-O tema `src/styles/prime-theme.css` é gerado por `scripts/build-unilog-theme.mjs`. Não edite nem versione o CSS gerado; ajuste a origem ou os tokens da aplicação. O comando `npm run dev:demo` gera o tema automaticamente.
+## Regras obrigatórias
+
+1. **Nunca versionar dados reais de colaboradores, CPF, nascimento, telefone, senhas, salt/hash ou tokens**, inclusive em fixtures, issues, screenshots e logs.
+2. Não criar fluxo de catraca.
+3. Não criar edição de colaboradores na planilha sem requisitos e aprovação. A única escrita prevista no Apps Script é `CAD_USUARIOS` durante setup e troca de senha.
+4. Não classificar automaticamente todo status diferente de `Trabalhando` como desligamento.
+5. Não expor `APPS_SCRIPT_GATEWAY_TOKEN`, `APP_SESSION_SECRET`, `AUTH_PASSWORD_PEPPER` ou `SPREADSHEET_ID` no frontend.
+6. Não modificar `bi-logistico-v2` nem `extra-cost-control-unilog`.
+7. Testar build, login, 401/403, módulos, senha inicial, logout, layout mobile, consistência de métricas e resposta da ponte. NUNCA considerar integração real homologada sem testes com a implantação autorizada.
+8. Revisar proteção contra brute force, retenção, KDF de senha, políticas de acesso aos hashes na planilha e observabilidade sem dados pessoais antes de produção.
+
+## Continuidade sugerida
+
+Gerar e versionar `package-lock.json` para CI determinística; testes de Pages Functions; cache com escopo correto; indicadores de HC contratado/realizado apenas depois de definir regra de negócio; melhoria da experiência mobile; autorização e auditoria. Não incluir serviços externos de persistência apenas por conveniência tecnológica.
+
+**Configuração do Cloudflare Pages:** branch `main`, comando `npm run build`, output `dist`, Node 22. Segredos `APPS_SCRIPT_URL`, `APPS_SCRIPT_GATEWAY_TOKEN`, `APP_SESSION_SECRET`. A execução atual ainda requer configurar Apps Script, usuários e segredo no Cloudflare; não há deploy autenticado homologado.

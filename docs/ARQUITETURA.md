@@ -1,60 +1,66 @@
-# Arquitetura e limites
+# Arquitetura Headcount G5 — sem banco externo
 
-## Fluxo de dados
+## Fluxo
 
 ```text
-Navegador (React + PrimeReact)
-  └─ Supabase Auth (sessão individual)
-       └─ GET /api/bootstrap [Cloudflare Pages Function]
-            ├─ valida token em /auth/v1/user do Supabase
-            ├─ consulta headcount_access sob RLS e perfil do usuário
-            └─ POST Apps Script [segredo exclusivo do servidor]
-                  └─ planilha COLABORADORES G5 / Cadastros [somente leitura]
-                      └─ dados mínimos normalizados (sem CPF, telefone ou nascimento)
+React (usuário e telas)
+  └─ /api/auth/login → Pages Function → Apps Script LOGIN → CAD_USUARIOS
+       └─ cookie de sessão assinado no Cloudflare (8 horas, HttpOnly)
+           └─ /api/bootstrap → Pages Function verifica cookie
+                └─ Apps Script HEADCOUNT_READ lê CAD_USUARIOS novamente
+                    └─ filtra por MODULOS autorizado antes de retornar
+                        └─ Cadastros (sem CPF/contato/nascimento)
 ```
 
-A **segurança está no servidor**. A tela pode esconder controles, mas não define quais colaboradores o usuário pode receber. Cada requisição ao gateway exige sessão e autorização atuais.
+O cookie prova a autenticação, mas **não substitui** a autorização mais recente da planilha. Retirar `ATIVO` ou `MODULOS` do usuário bloqueia novas leituras sem aguardar o cookie expirar.
 
-## Camadas
+## Aba de usuários
 
-- `src/pages`: composição de visualizações e interações.
-- `src/ui`: linguagem visual comum; tokens de cor em `styles.css`.
-- `src/lib/metrics.ts`: indicadores puros e testáveis.
-- `src/types.ts`: contrato explícito da API.
-- `src/lib/auth.ts` e `src/lib/api.ts`: adaptação do navegador.
-- `functions/api/bootstrap.ts`: autorização e filtro por módulos.
-- `apps-script/HeadcountApi.gs`: leitura e minimização dos dados.
-- `supabase/migrations`: tabela isolada de autorizações; não afeta projetos anteriores automaticamente.
+`CAD_USUARIOS`, criada manualmente via `setupHeadcountAuthSheet()`:
 
-## Contrato inicial da aba Cadastros
+| Coluna | Nome | Uso |
+| --- | --- | --- |
+| A | EMAIL | Identificador único; normalizado em minúsculas |
+| B | NOME | Nome de exibição |
+| C | SENHA_HASH | Hash iterativo com salt e pepper; não é senha em texto puro |
+| D | SALT | Valor aleatório individual |
+| E | PERFIL | `OWNER`, `ADMIN`, `VISUALIZADOR` |
+| F | MODULOS | `*`, ou lista como `M04;M05` |
+| G | ATIVO | `SIM` ou inativo |
+| H | EXIGE_TROCA_SENHA | `SIM` até primeiro login com nova senha |
+| I | ULTIMA_ALTERACAO | Momento de troca da senha |
 
-| Campo API | Coluna | Interpretação |
-|---|---|---|
-| id | G — Cadastro | Matrícula; chave de unicidade provisória |
+Acessos são bloqueados quando o usuário não existe, é inativo, está duplicado ou não possui módulos explícitos. `*` significa todos os módulos. Os papéis são informativos nesta fase, pois o Headcount é somente consulta.
+
+## Contrato operacional
+
+| Campo entregue | Coluna Cadastros | Observação |
+| --- | --- | --- |
+| id | G — Cadastro | Matrícula |
 | name | A — Nome | Nome funcional |
 | role | E — Título Reduzido (Cargo) | Cargo |
 | area | F — Área funcional | Área |
-| admission | H — Admissão | Data (formato exibido pela planilha) |
-| costCenter | M — C.C | Centro de custo da aba Cadastros |
-| status | N — Status | Texto tal como cadastrado |
-| client | O — Alocação | Alocação / depositante |
-| shift | P — Horário | Escala ou horário declarado |
-| supervisorId | Q — ID Superior | ID do superior |
-| supervisor | R — Nome Superior | Nome do superior |
-| lead | T — Nome Encarregado | Nome do encarregado |
-| module | U — Módulo | Escopo potencial de autorização |
-| process | V — Processo Principal | Processo operacional |
+| admission | H — Admissão | Data exibida |
+| costCenter | M — C.C | Centro de custo |
+| status | N — Status | Texto original |
+| client | O — Alocação | Cliente/depositante |
+| shift | P — Horário | Escala |
+| supervisorId | Q — ID Superior | Identificador |
+| supervisor | R — Nome Superior | Supervisor |
+| lead | T — Nome Encarregado | Encarregado |
+| module | U — Módulo | Escopo de acesso |
+| process | V — Processo Principal | Processo |
 
-`B — Contato`, `C — CPF`, `D — Nascimento`, armários e escaninhos não saem da ponte. `Senior`, `Geral Escaninho`, `Vestiários` e `Listas` não entram na API inicial. A aba `Dados` fornece apenas data de atualização.
+**Não retornados:** Contato, CPF, Nascimento, Armário, Escaninho. A aba `Dados` fornece somente `L1` como data de referência. Nenhuma outra aba faz parte da integração inicial.
 
-## Decisões pendentes
+## Segredos e superfícies
 
-- Fonte de verdade para vínculo, afastamento e desligamento: `Cadastros` versus `Senior`.
-- Critérios de HC contratado, HC realizado, vacância e mobilidade (não implementados).
-- Tratamento de matrículas duplicadas e sem matrícula, atualmente excluídas e contabilizadas em qualidade.
-- Consolidação e autorização intergalpões G6/G9, alocação e centro de custo.
-- Políticas de retenção, auditoria, exportação e classificação da informação.
+- Cloudflare Secrets: `APPS_SCRIPT_URL`, `APPS_SCRIPT_GATEWAY_TOKEN`, `APP_SESSION_SECRET`.
+- Google Apps Script Script Properties: `SPREADSHEET_ID`, `GATEWAY_TOKEN`, `AUTH_PASSWORD_PEPPER`; temporariamente `AUTH_PENDING_EMAIL`, `AUTH_PENDING_PASSWORD` apenas durante provisionamento.
+- Navegador recebe exclusivamente cookie de sessão HttpOnly e payload já filtrado, nunca token do gateway.
 
-## Alerta de segurança
+A planilha deve ter acesso restrito porque armazena hashes de senha. O algoritmo inicial de hash segue a implementação operacional do Extra Cost (2.048 rodadas de SHA-256 com salt e pepper), mas não equivale a Argon2id/scrypt/PBKDF2 com custo recomendado; rever antes de ampliação de usuários.
 
-O modo demo só funciona quando `import.meta.env.DEV` e `VITE_DEMO_MODE=true`; uma build de produção não deve oferecer acesso anônimo. A aplicação contém informação pessoal identificável quando integrada: use repositório privado se a equipe decidir incluir documentação interna adicional, valide permissões e não publique dados reais.
+## Pendências de governança
+
+Origem definitiva para afastamentos e desligamentos (`Cadastros` vs `Senior`), tratamento de matrículas duplicadas, autorização entre galpões G6/G9, definição de HC vendido/realizado, regramento de exportação, limites de login, auditoria e retenção de dados.
