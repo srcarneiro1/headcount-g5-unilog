@@ -8,7 +8,7 @@ import {Tag} from 'primereact/tag'
 import {Button} from 'primereact/button'
 import {Panel, Title, statusSeverity} from '../ui/common'
 import {searchEmployees} from '../lib/metrics'
-import {exportarRelatorioMichiel} from '../lib/relatorio'
+import {exportarRelatorio} from '../lib/relatorio'
 import type {Employee, Filters} from '../types'
 
 const countFmt = new Intl.NumberFormat('pt-BR')
@@ -43,8 +43,8 @@ export function Employees({rows}: {rows: Employee[]; filters?: Filters; setFilte
 
   return <>
     <Title title="Colaboradores" subtitle="Consulta de quadro, cargo, liderança, centro de custo e situação funcional."
-      action={<Button icon="pi pi-download" label="Relatório Michiel" outlined severity="secondary" disabled={!visiveis.length}
-        onClick={() => exportarRelatorioMichiel(visiveis)} tooltip="Nome, Cadastro, Cargo, C.C, superior, encarregado e alocação dos colaboradores listados" tooltipOptions={{position: 'bottom'}}/>}/>
+      action={<Button icon="pi pi-download" label="Exportar relatório" outlined severity="secondary" disabled={!visiveis.length}
+        onClick={() => exportarRelatorio(visiveis)} tooltip="Nome, Cadastro, Cargo, C.C, superior, encarregado e alocação dos colaboradores listados" tooltipOptions={{position: 'bottom'}}/>}/>
     <Panel title="Relação do efetivo" kicker="CONSULTA">
       <div className="table-toolbar">
         <span className="search-wrap"><i className="pi pi-search"/><InputText value={query} placeholder="Buscar nome, matrícula ou cargo" onChange={e => setQuery(e.target.value)}/></span>
