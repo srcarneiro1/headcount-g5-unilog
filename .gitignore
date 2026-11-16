@@ -14,3 +14,11 @@ coverage/
 
 # Tema derivado do PrimeReact, gerado no pré-build
 src/styles/prime-theme.css
+
+# Artefato do build TypeScript (tsc -b)
+*.tsbuildinfo
+
+# Chaves e credenciais locais (nunca versionar)
+*.pem
+*.key
+.clasprc.json
