@@ -132,7 +132,7 @@ function applyPendingUserPassword() {
   var password=String(props.getProperty('AUTH_PENDING_PASSWORD')||'');
   try {
     if(!email)throw new Error('AUTH_PENDING_EMAIL ausente. Cadastre o e-mail do usuário em Configurações do projeto > Propriedades do script.');
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('AUTH_PENDING_EMAIL não contém um e-mail válido.');
+    if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('AUTH_PENDING_EMAIL não contém um e-mail válido.');
     if(!password)throw new Error('AUTH_PENDING_PASSWORD ausente. Cadastre a senha provisória em Configurações do projeto > Propriedades do script.');
     if(password.length<10||password.length>256)throw new Error('AUTH_PENDING_PASSWORD precisa ter entre 10 e 256 caracteres.');
     var user=hcAccess_(email);
