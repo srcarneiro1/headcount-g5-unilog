@@ -1,5 +1,7 @@
 export type AccessRole = 'OWNER' | 'ADMIN' | 'VISUALIZADOR'
-export type AccessProfile = { email: string; role: AccessRole; modules: string[] }
+export type AccessProfile = { email: string; name?: string; role: AccessRole; modules: string[] }
+/** Registro da aba Cadastros com problema (linha da planilha para correção na origem). */
+export type QualityIssue = { row: number; id: string; name: string; module: string; type: 'DUPLICADO' | 'INVALIDO'; reason: string }
 export interface Employee {
   id: string
   name: string
@@ -21,7 +23,7 @@ export interface HubPayload {
   source: 'google-sheets' | 'demo'
   employees: Employee[]
   profile: AccessProfile
-  quality: { duplicateIds: number; invalidRows: number }
+  quality: { duplicateIds: number; invalidRows: number; issues?: QualityIssue[] }
 }
 export interface Filters {
   query: string

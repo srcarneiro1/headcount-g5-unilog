@@ -1,40 +1,18 @@
-/* Identidade Unilog (Manual de Marca 2026, Rev. 2) — mesmo padrão do Extra Cost Control.
-   Carregado depois de styles.css: só ajustes de identidade; a estrutura das telas não muda. */
+/* Ajustes próprios do Headcount. Menu, topo, login, cabeçalho de página e cartões vêm do Extra Cost
+   (src/brand/extra-base.css, gerado). Aqui ficam só os componentes que o Extra não tem. */
 
 html, body, button, input, select, textarea, .p-component, .p-inputtext {
   font-family: 'Roboto', Verdana, Arial, sans-serif;
 }
-body { color: var(--unilog-cinza); }
 
-/* ---------- Barra lateral ---------- */
-.sidebar { background: var(--unilog-cinza); padding-top: env(safe-area-inset-top, 0px); }
-.sidebar-brand { height: auto; min-height: 85px; gap: 12px; }
-.sidebar-logo { width: 74px; height: auto; flex: 0 0 auto; }
-.sidebar-product { display: grid; gap: 2px; min-width: 0; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, .18); }
-.sidebar-product strong { color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .14em; }
-.sidebar-product small { color: var(--unilog-cinza-20); font-size: 11px; }
-.side-link { color: var(--unilog-cinza-20); border-radius: 6px; }
-.side-link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-.side-link.active { background: rgba(255, 255, 255, .12); color: #fff; border-left-color: var(--unilog-vermelho); }
-.nav-caption { color: var(--unilog-cinza-40); letter-spacing: .14em; }
-.signout { color: var(--unilog-cinza-20); }
-.signout:hover { color: #fff; }
+/* Conteúdo dentro da área de trabalho do Extra (nx-workspace). */
+.nx-workspace .content { width: 100%; max-width: 1670px; margin: 0 auto; padding: 22px 30px 34px; box-sizing: border-box; }
+@media (max-width: 760px) { .nx-workspace .content { padding: 16px 14px 28px; } }
 
-/* ---------- Barra superior ---------- */
-.topbar { padding-top: env(safe-area-inset-top, 0px); }
-.sync-info .pi-circle-fill { color: #3f7c59; }
+/* Faixa de dados da base (sem o perfil: ele fica no rodapé do menu, como no Extra). */
+.snapshot-bar { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 
-/* ---------- Títulos e destaques ---------- */
-.page-title h1 { font-weight: 700; letter-spacing: -.02em; color: var(--unilog-cinza); }
-.eyebrow, .sub-label { letter-spacing: .14em; }
-.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary) {
-  background: var(--unilog-vermelho); border-color: var(--unilog-vermelho);
-}
-.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):hover {
-  background: var(--unilog-vermelho-hover); border-color: var(--unilog-vermelho-hover);
-}
-
-/* ---------- Filtros: recolhíveis no celular ---------- */
+/* Filtros: recolhíveis no celular (no computador ficam sempre abertos). */
 .filter-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-toggle { display: none !important; }
 @media (max-width: 690px) {
@@ -44,58 +22,29 @@ body { color: var(--unilog-cinza); }
   .filter-header h2 { font-size: 15px; }
 }
 
-/* ---------- Login (igual ao Extra Cost) ---------- */
-.login-page {
-  position: relative; overflow: hidden; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 22px; padding: clamp(18px, 4vw, 40px); background: var(--unilog-cinza);
-}
-.login-page > .login-side, .login-page > .login-form-wrap, .login-page > .login-legal { position: relative; z-index: 1; }
-.login-page { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); align-content: center; justify-items: stretch;
-  column-gap: clamp(20px, 4vw, 56px); max-width: none; }
-.login-page .login-side {
-  background: transparent !important; color: #fff; padding: 8px 0; display: flex; flex-direction: column; gap: 34px;
-  justify-content: center; max-width: 560px; justify-self: end; width: 100%;
-}
-.login-page .login-side::before, .login-page .login-side::after { display: none !important; }
-.login-page .brand-mark { display: flex; align-items: center; gap: 16px; }
-.login-page .brand-mark img { width: 150px; height: auto; }
-.product-chip { padding: 6px 14px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .22em; color: #fff; }
-.overline-dash { display: inline-flex !important; align-items: center; gap: 12px; letter-spacing: .22em; font-weight: 700; }
-.overline-dash::before { content: ''; width: 34px; height: 2px; background: var(--unilog-vermelho); }
-.login-page .login-side small { color: var(--unilog-cinza-20); font-size: 11px; }
-.login-page .login-side h1 { margin: 14px 0; font-size: clamp(30px, 4.2vw, 46px); line-height: 1.08; font-weight: 700; letter-spacing: -.02em; color: #fff; }
-.login-page .accent { box-shadow: inset 0 -0.16em 0 var(--unilog-vermelho); }
-.login-page .login-side p { font-size: 16px; line-height: 1.55; font-weight: 300; color: var(--unilog-cinza-20); max-width: 46ch; }
-.login-page .login-form-wrap { background: transparent !important; padding: 0; display: flex; justify-content: flex-start; width: 100%; }
-.login-page .login-card { width: min(440px, 100%); background: #fff; border-radius: 8px; box-shadow: 0 18px 50px rgba(0, 0, 0, .18); }
-.login-page .login-card .eyebrow { color: var(--unilog-vermelho); }
-.login-page .login-card h2 { color: var(--unilog-cinza); font-weight: 700; }
-.login-page .login-card .p-inputtext { border-radius: 6px; min-height: 46px; }
-.login-page .login-card .p-button { min-height: 46px; border-radius: 6px; font-weight: 700; }
-.login-legal { grid-column: 1 / -1; justify-self: center; font-size: 12px; color: var(--unilog-cinza-20); }
-@media (max-width: 860px) {
-  .login-page { grid-template-columns: 1fr; row-gap: 18px; }
-  .login-page .login-side { justify-self: stretch; gap: 18px; }
-  .login-page .login-side h1 { font-size: 28px; }
-  .login-page .login-form-wrap { justify-content: center; }
-}
-@media (max-width: 560px) {
-  .login-page .brand-mark img { width: 130px; }
-  .login-page .login-side p { display: none; }
-}
-
-/* Gráficos: o invólucro .p-chart do PrimeReact não tinha altura e o Chart.js desenhava no tamanho padrão (300 px),
-   ultrapassando a área da rosca (210 px) e sendo cortado pelo painel. */
+/* Gráfico de rosca: o invólucro .p-chart do PrimeReact não tinha altura e o Chart.js desenhava 300 px numa
+   área de 210 px, cortando o gráfico. */
 .donut-stage { position: relative; }
 .donut-stage > .p-chart { position: relative; width: 100%; height: 100%; }
 
-/* Senha com a mesma largura do e-mail; nome do produto numa linha ao lado do logo. */
-.login-page .login-card .p-password, .login-page .login-card .p-password input { width: 100%; }
-.sidebar-product strong { white-space: nowrap; font-size: 11px; letter-spacing: .1em; }
-.sidebar-logo { width: 68px; }
-.login-page .login-card .p-password .p-icon-field { flex: 1 1 auto; width: 100%; }
+/* Cabeçalho de página: ações alinhadas como no Extra. */
+.dashboard-page-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
 
-/* Selos do login (iguais ao Extra: "Acesso protegido" e "Credenciais seguras"). */
-.login-proof { display: flex; flex-wrap: wrap; gap: 16px; font-size: 11px; font-weight: 600; color: var(--unilog-cinza-20); }
-.login-proof span { display: flex; align-items: center; gap: 7px; }
-.login-proof i { font-size: 13px; color: #fff; }
+/* Pendências da origem (Visão geral). */
+.quality-issues { margin-top: 18px; }
+.quality-issues .hint .pi { margin-right: 6px; }
+.quality-issues-table .p-datatable-tbody > tr > td { white-space: normal; }
+
+/* Login: a versão do PrimeReact do Headcount envolve a senha num .p-icon-field que não se estica (o Extra não tem
+   esse invólucro); sem isto, a senha fica mais estreita que o e-mail. */
+.nx-login-form .nx-password, .nx-login-form .nx-password .p-icon-field, .nx-login-form .nx-password input { width: 100%; }
+.nx-login-form .nx-password .p-icon-field { flex: 1 1 auto; }
+
+/* Gráficos dentro de áreas com altura definida: o invólucro .p-chart do PrimeReact não herdava a altura e o
+   Chart.js desenhava no tamanho padrão (barras sobrepostas virando um bloco; rosca cortada). Vale para todos. */
+.p-chart { position: relative; width: 100%; height: 100%; }
+
+/* Supervisão tem 3 indicadores: 3 colunas (a grade do Extra é de 4), mantendo as quebras do Extra no celular. */
+@media (min-width: 901px) {
+  .dashboard-metrics-grid.metrics-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

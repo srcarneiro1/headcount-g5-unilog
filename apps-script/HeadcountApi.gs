@@ -92,20 +92,21 @@ function hcRead_(body) {
   if(!sheet)throw new Error('Aba Cadastros ausente');
   var count=sheet.getLastRow();
   var rows=count>1?sheet.getRange(2,1,count-1,22).getDisplayValues():[];
-  var users=[],seen=Object.create(null),duplicateIds=0,invalidRows=0;
+  // Pendências da origem com linha, matrícula, nome e motivo (sem dados sensíveis), para corrigir na aba Cadastros.
+  var users=[],seen=Object.create(null),duplicateIds=0,invalidRows=0,issues=[],ISSUE_LIMIT=500;
   for(var i=0;i<rows.length;i++) {
     var row=rows[i];if(!row.some(Boolean))continue;
     var module=hcUpper_(row[20]);
     if(!profile.modules.includes('*') && !profile.modules.includes(module))continue;
     var id=hcText_(row[6]),name=hcText_(row[0]);
-    if(!id||!name){invalidRows++;continue;}
-    if(Object.prototype.hasOwnProperty.call(seen,id)){duplicateIds++;continue;}
-    seen[id]=true;
+    if(!id||!name){invalidRows++;if(issues.length<ISSUE_LIMIT)issues.push({row:i+2,id:id,name:name,module:module,type:'INVALIDO',reason:!id&&!name?'Matrícula e nome ausentes':!id?'Matrícula ausente':'Nome ausente'});continue;}
+    if(Object.prototype.hasOwnProperty.call(seen,id)){duplicateIds++;if(issues.length<ISSUE_LIMIT)issues.push({row:i+2,id:id,name:name,module:module,type:'DUPLICADO',reason:'Matrícula repetida (primeira ocorrência na linha '+seen[id]+')'});continue;}
+    seen[id]=i+2;
     users.push({id:id,name:name,role:hcText_(row[4]),area:hcText_(row[5]),admission:hcText_(row[7]),costCenter:hcText_(row[12]),status:hcText_(row[13]),client:hcText_(row[14]),shift:hcText_(row[15]),supervisorId:hcText_(row[16]),supervisor:hcText_(row[17]),lead:hcText_(row[19]),module:module,process:hcText_(row[21])});
   }
   var summary=hcWorkbook_().getSheetByName('Dados');
   var sourceDate=summary?hcText_(summary.getRange('L1').getDisplayValue()):'';
-  return {ok:true,updatedAt:new Date().toISOString(),sourceDate:sourceDate,employees:users,profile:{email:email,role:profile.role,modules:profile.modules},quality:{duplicateIds:duplicateIds,invalidRows:invalidRows}};
+  return {ok:true,updatedAt:new Date().toISOString(),sourceDate:sourceDate,employees:users,profile:{email:email,name:profile.name,role:profile.role,modules:profile.modules},quality:{duplicateIds:duplicateIds,invalidRows:invalidRows,issues:issues}};
 }
 /** Executar MANUALMENTE, uma vez, no editor Apps Script. Não altera a aba Cadastros. */
 function setupHeadcountAuthSheet() {

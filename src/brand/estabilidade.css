@@ -1,84 +1,29 @@
-/* Estabilidade de tela — mesmas proteções do Extra Cost Control, trazidas para o Headcount.
-   Carregado por último. Cada bloco cita o problema que resolve. */
+/* Estabilidade de tela — mesmas proteções do Extra Cost Control. Carregado por último. */
 
-/* 1. Bordas brancas ao puxar a tela (rolagem elástica do iPhone/Mac). O html não tinha fundo: ao "esticar",
-      aparecia o branco padrão. Extra: commit 93ebb1b "conter overscroll elástico do shell". */
-html {
-  background: var(--canvas);
-  overscroll-behavior-y: none;
-}
-body {
-  overscroll-behavior-y: none;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-.app-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: var(--canvas);
-}
+/* 1. Bordas brancas ao puxar a tela (rolagem elástica): html sem fundo. Extra: commit 93ebb1b. */
+html { background: var(--canvas); overscroll-behavior-y: none; }
+body { overscroll-behavior-y: none; min-height: 100vh; min-height: 100dvh; }
 
-/* 2. Nada pode empurrar a página para os lados (conteúdo largo rola dentro do próprio quadro). */
-.workspace { min-width: 0; overflow-x: clip; }
-.content { min-width: 0; padding-bottom: calc(34px + env(safe-area-inset-bottom, 0px)); }
-.p-datatable-wrapper,
-.employee-table .p-datatable-wrapper {
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  -webkit-overflow-scrolling: touch;
-}
+/* 2. Nada empurra a página para os lados; conteúdo largo rola dentro do próprio quadro. */
+.nx-workspace { min-width: 0; overflow-x: clip; }
+.nx-workspace .content { min-width: 0; padding-bottom: calc(34px + env(safe-area-inset-bottom, 0px)); }
+.p-datatable-wrapper { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
 
-/* 3. Zoom automático do iPhone: o iOS amplia a tela ao tocar num campo com texto menor que 16 px e ela fica
-      deslocada. Os campos usavam 12 px. Extra: ios-input-zoom.css. */
+/* 3. Zoom automático do iPhone em campos < 16 px (Extra: ios-input-zoom.css). */
 @media (max-width: 760px) {
-  .p-inputtext,
-  .p-password-input,
-  .p-dropdown .p-dropdown-label,
-  .p-dropdown-filter,
-  .search-wrap input,
-  input,
-  select,
-  textarea {
-    font-size: 16px !important;
-  }
+  .p-inputtext, .p-password-input, .nx-password-input, .p-dropdown .p-dropdown-label, .p-dropdown-filter,
+  .search-wrap input, input, select, textarea { font-size: 16px !important; }
 }
 
-/* 4. Menus e listas suspensas não "arrastam" a página quando chegam ao fim. */
-.sidebar { overflow-y: auto; overscroll-behavior: contain; }
-.p-dropdown-items-wrapper,
-.p-dialog-content { overscroll-behavior: contain; }
+/* 4. Menu, listas e diálogos não "arrastam" a página. */
+.nx-sidebar { overscroll-behavior: contain; }
+.p-dropdown-items-wrapper, .p-dialog-content { overscroll-behavior: contain; }
 
-/* 5. Toque sem o realce azul do navegador (Extra: next-shell.css). */
-button,
-a,
-.side-link,
-.p-button { -webkit-tap-highlight-color: transparent; }
+/* 5. Sem realce azul ao tocar (Extra: next-shell.css). */
+button, a, .nx-nav-item, .p-button { -webkit-tap-highlight-color: transparent; }
 
-/* 6. Textos longos (e-mail, nomes, clientes) não estouram a largura. */
-.identity strong,
-.identity small { display: block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.page-title h1,
-.panel-head h2,
-.rank-name,
-.person-card strong,
-.supervisor-card strong { overflow-wrap: anywhere; }
+/* 6. Textos longos não estouram. */
+.dashboard-page-heading h1, .panel-head h2, .rank-name, .person-card strong, .supervisor-card strong { overflow-wrap: anywhere; }
 
-/* 7. Login ocupa a altura real da tela no celular (barra do navegador incluída). */
-.login-page { min-height: 100vh; min-height: 100dvh; overscroll-behavior-y: none; }
-
-/* 8. Menu no celular: o botão de fechar ficava sobre "HEADCOUNT G5"; reserva espaço para ele. */
-@media (max-width: 960px) {
-  .sidebar-brand { position: relative; padding-right: 60px; }
-  .sidebar-brand .drawer-close { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
-}
-@media (max-width: 960px) {
-  .sidebar-logo { width: 58px; }
-  .sidebar-product { min-width: 0; overflow: hidden; }
-  .sidebar-product strong { letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; }
-}
-@media (max-width: 960px) {
-  .sidebar-logo { width: 50px; }
-  .sidebar-product strong { font-size: 10px; letter-spacing: .04em; text-overflow: clip; }
-  .sidebar-product small { display: none; }
-}
+/* 7. Login na altura real da tela. */
+.nx-login-page { min-height: 100vh; min-height: 100dvh; overscroll-behavior-y: none; }
