@@ -1,14 +1,22 @@
 import type {Employee,Filters,HubPayload} from '../types'
+import {filterKeys} from '../types'
 export function normalized(value:unknown):string {return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim()}
+/** Filtros globais: em cada campo, lista vazia = todos; com valores, o registro precisa estar entre eles. */
 export function filterEmployees(rows:Employee[],filters:Filters):Employee[]{
- const q=normalized(filters.query)
- return rows.filter(e=>(!filters.status||e.status===filters.status)&&(!filters.module||e.module===filters.module)&&(!filters.supervisor||e.supervisor===filters.supervisor)&&(!filters.client||e.client===filters.client)&&(!filters.costCenter||e.costCenter===filters.costCenter)&&(!filters.shift||e.shift===filters.shift)&&(!filters.role||e.role===filters.role)&&(!q||[e.name,e.id,e.role,e.client,e.supervisor,e.costCenter,e.module,e.lead].some(v=>normalized(v).includes(q))))
+  const ativos=filterKeys.filter(k=>filters[k].length)
+  return rows.filter(e=>ativos.every(k=>filters[k].includes(e[k])))
+}
+/** Busca por texto da tela de Colaboradores (local): nome, matrícula, cargo, liderança e alocação, sem acentos. */
+export function searchEmployees(rows:Employee[],query:string):Employee[]{
+  const q=normalized(query)
+  if(!q)return rows
+  return rows.filter(e=>[e.name,e.id,e.role,e.supervisor,e.lead,e.client].some(v=>normalized(v).includes(q)))
 }
 export function distribution(rows:Employee[],key:keyof Employee):{name:string;value:number}[]{
  const counts=new Map<string,number>();for(const row of rows){const k=row[key]?.trim()||'NÃO INFORMADO';counts.set(k,(counts.get(k)??0)+1)}
  return [...counts].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value||a.name.localeCompare(b.name,'pt-BR'))
 }
-export function uniqueValues(rows:Employee[],key:keyof Employee):string[]{return [...new Set(rows.map(row=>row[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'))}
+export function uniqueValues(rows:Employee[],key:keyof Employee):string[]{return [...new Set(rows.map(row=>String(row[key]??'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'))}
 export function parseBRDate(s:string):Date|null{const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s.trim());if(!m)return null;const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));return d.getFullYear()===Number(m[3])&&d.getMonth()===Number(m[2])-1&&d.getDate()===Number(m[1])?d:null}
 export function stats(rows:Employee[],now=new Date()){
  const working=rows.filter(e=>normalized(e.status)==='TRABALHANDO').length

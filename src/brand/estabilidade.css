@@ -12,6 +12,7 @@ body { overscroll-behavior-y: none; min-height: 100vh; min-height: 100dvh; }
 /* 3. Zoom automático do iPhone em campos < 16 px (Extra: ios-input-zoom.css). */
 @media (max-width: 760px) {
   .p-inputtext, .p-password-input, .nx-password-input, .p-dropdown .p-dropdown-label, .p-dropdown-filter,
+  .p-multiselect .p-multiselect-label, .p-multiselect-filter,
   .search-wrap input, input, select, textarea { font-size: 16px !important; }
 }
 

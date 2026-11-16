@@ -102,7 +102,7 @@ function hcRead_(body) {
     if(!id||!name){invalidRows++;if(issues.length<ISSUE_LIMIT)issues.push({row:i+2,id:id,name:name,module:module,type:'INVALIDO',reason:!id&&!name?'Matrícula e nome ausentes':!id?'Matrícula ausente':'Nome ausente'});continue;}
     if(Object.prototype.hasOwnProperty.call(seen,id)){duplicateIds++;if(issues.length<ISSUE_LIMIT)issues.push({row:i+2,id:id,name:name,module:module,type:'DUPLICADO',reason:'Matrícula repetida (primeira ocorrência na linha '+seen[id]+')'});continue;}
     seen[id]=i+2;
-    users.push({id:id,name:name,role:hcText_(row[4]),area:hcText_(row[5]),admission:hcText_(row[7]),costCenter:hcText_(row[12]),status:hcText_(row[13]),client:hcText_(row[14]),shift:hcText_(row[15]),supervisorId:hcText_(row[16]),supervisor:hcText_(row[17]),lead:hcText_(row[19]),module:module,process:hcText_(row[21])});
+    users.push({id:id,name:name,role:hcText_(row[4]),area:hcText_(row[5]),admission:hcText_(row[7]),costCenter:hcText_(row[12]),status:hcText_(row[13]),client:hcText_(row[14]),shift:hcText_(row[15]),supervisorId:hcText_(row[16]),supervisor:hcText_(row[17]),leadId:hcText_(row[18]),lead:hcText_(row[19]),module:module,process:hcText_(row[21])});
   }
   var summary=hcWorkbook_().getSheetByName('Dados');
   var sourceDate=summary?hcText_(summary.getRange('L1').getDisplayValue()):'';

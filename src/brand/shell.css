@@ -48,3 +48,38 @@ html, body, button, input, select, textarea, .p-component, .p-inputtext {
 @media (min-width: 901px) {
   .dashboard-metrics-grid.metrics-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* Quadrantes sem lacunas: painéis da mesma linha com a mesma altura e o conteúdo (gráfico/lista) ocupando o espaço.
+   Antes cada painel tinha a altura do próprio conteúdo (ex.: 409 × 346 px lado a lado). */
+.section-grid { align-items: stretch; }
+.section-grid > .panel { height: 100%; display: flex; flex-direction: column; }
+.section-grid > .panel > .p-card-body,
+.section-grid > .panel .p-card-content,
+.section-grid > .panel .panel-content { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+.chart-box { flex: 1 1 auto; position: relative; }
+.section-grid > .panel .donut-layout { flex: 1 1 auto; align-items: center; }
+.section-grid > .panel .quality-grid { flex: 1 1 auto; align-content: stretch; }
+/* Todas as alocações: lista longa rola dentro do painel (sem esticar a linha). */
+.rank-list { max-height: 312px; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+/* Listas curtas e blocos de consistência ocupam o painel inteiro (sem faixa vazia embaixo). */
+.section-grid > .panel .rank-list { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
+.section-grid > .panel .quality-grid { grid-auto-rows: 1fr; }
+
+/* Filtros de escolha múltipla com o mesmo tamanho/altura dos campos de lista anteriores. */
+.filter-field .p-multiselect { width: 100%; min-height: 38px; border-radius: 6px; align-items: center; }
+.filter-field .p-multiselect .p-multiselect-label { font-size: 12px; padding: 9px 12px; }
+.filter-field .p-multiselect .p-multiselect-label.p-placeholder { color: var(--unilog-cinza-60, #6d6e78); }
+.filter-multiselect-panel .p-multiselect-item { font-size: 12px; }
+
+/* Recorte local em Colaboradores (vindo da Visão geral ou da Supervisão): etiqueta removível. */
+.recorte-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--unilog-vermelho);
+  border-radius: 999px; background: #fbe6e7; color: var(--unilog-cinza); font: inherit; font-size: 12px; cursor: pointer; }
+.recorte-chip strong { color: var(--unilog-vermelho); }
+.recorte-chip .pi { font-size: 10px; }
+.recorte-chip:hover { background: #f7d1d3; }
+
+/* Paginador: o número de linhas por página (15/30/50) ficava colado no topo da caixa, desalinhado das páginas. */
+.p-paginator { align-items: center; }
+.p-paginator .p-dropdown { height: 40px; align-items: center; border-radius: 6px; margin-left: 8px; }
+.p-paginator .p-dropdown .p-dropdown-label { display: flex; align-items: center; height: 100%; padding: 0 10px; font-size: 13px; line-height: 1; }
+.p-paginator .p-dropdown .p-dropdown-trigger { height: 100%; }
