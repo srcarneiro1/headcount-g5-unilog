@@ -33,3 +33,6 @@ Desenvolver o Headcount G5 como produto independente. Extra Cost Control fornece
 
 ## Critério de aceite
 A versão não estará pronta para uso operacional até passar em `npm test`, `npm run build`, validação de acesso 401/403, comparação de indicadores com a planilha, testes de não exposição de PII e aceite do responsável pelo processo.
+
+## Tema e identidade visual
+O tema `src/styles/prime-theme.css` é gerado por `scripts/build-unilog-theme.mjs`. Não edite nem versione o CSS gerado; ajuste a origem ou os tokens da aplicação. O comando `npm run dev:demo` gera o tema automaticamente.

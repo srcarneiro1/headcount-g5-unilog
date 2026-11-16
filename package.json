@@ -4,8 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/build-unilog-theme.mjs",
     "dev": "vite",
+    "predev:demo": "node scripts/build-unilog-theme.mjs",
     "dev:demo": "VITE_DEMO_MODE=true vite",
+    "prebuild": "node scripts/build-unilog-theme.mjs",
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "preview": "vite preview",

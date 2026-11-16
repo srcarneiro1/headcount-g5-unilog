@@ -31,7 +31,7 @@ Não existe `package-lock.json` porque o ambiente de geração não teve acesso 
 
 ## Tecnologias
 
-React, TypeScript, Vite, React Router, PrimeReact, Chart.js, Cloudflare Pages Functions, Supabase Auth e Google Apps Script como ponte **somente de leitura** do Google Sheets. Componentes visuais seguem a linguagem cromática do Extra Cost; nenhuma regra interna do BI foi copiada.
+React, TypeScript, Vite, React Router, PrimeReact, Chart.js, Cloudflare Pages Functions, Supabase Auth e Google Apps Script como ponte **somente de leitura** do Google Sheets. Componentes visuais seguem a linguagem cromática do Extra Cost; o tema PrimeReact é gerado por `scripts/build-unilog-theme.mjs` antes do desenvolvimento e do build, a partir do tema Lara Light Indigo oficial, substituindo sua paleta. Nenhuma regra interna do BI foi copiada.
 
 ## Organização
 
