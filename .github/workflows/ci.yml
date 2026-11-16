@@ -1,0 +1,20 @@
+name: headcount-ci
+on:
+  push:
+    branches: [main, 'feature/**', 'fix/**']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Atualizar para 'npm ci' após gerar e versionar package-lock.json.
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
