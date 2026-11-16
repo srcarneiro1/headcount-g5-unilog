@@ -12,13 +12,13 @@ const origin=require.resolve('primereact/resources/themes/lara-light-indigo/them
 const output=path.join(process.cwd(),'src/styles/prime-theme.css')
 const replacements={
   '#0ea5e9':'#6d6e78','#0284c7':'#494a56','#3b82f6':'#6d6e78','#2563eb':'#494a56',
-  '#ef4444':'#db0812','#dc2626':'#b8070f','#a855f7':'#6d6e78','#9333ea':'#494a56',
+  '#ef4444':'#db0812','#dc2626':'#b00610','#a855f7':'#6d6e78','#9333ea':'#494a56',
   '#22c55e':'#3f7c59','#16a34a':'#2f6d49','#15803d':'#23603c',
   '#f97316':'#a87900','#ea580c':'#8c6800','#eab308':'#a87900',
   '#14b8a6':'#5f8f8b',
-  '#eef2ff':'#fdecee','#e0e7ff':'#fbd9dc','#c7d2fe':'#f5b5b9',
+  '#eef2ff':'#fbe6e7','#e0e7ff':'#fbd9dc','#c7d2fe':'#f5b5b9',
   '#a5b4fc':'#ee8a90','#818cf8':'#e55a62','#6366f1':'#db0812',
-  '#4f46e5':'#b8070f','#4338ca':'#9e060d','#3730a3':'#83050b','#312e81':'#6a0409',
+  '#4f46e5':'#b00610','#4338ca':'#9e060d','#3730a3':'#83050b','#312e81':'#6a0409',
   '#f7f7fe':'#fff5f6','#dadafc':'#fbd9dc','#bcbdf9':'#f5b5b9',
   '#9ea0f6':'#ee8a90','#8183f4':'#e55a62','#5457cd':'#b8070f',
   '#4547a9':'#9e060d','#363885':'#83050b','#282960':'#6a0409','#b1b3f8':'#f5b5b9'

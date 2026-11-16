@@ -1,9 +1,11 @@
 import React from 'react'
 import {createRoot} from 'react-dom/client'
+import './brand/brand.css'
 import './styles/prime-theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
 import 'chart.js/auto'
 import './styles.css'
+import './brand/shell.css'
 import App from './App'
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>)
