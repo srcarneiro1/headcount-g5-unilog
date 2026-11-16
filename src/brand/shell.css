@@ -60,9 +60,18 @@ html, body, button, input, select, textarea, .p-component, .p-inputtext {
 .section-grid > .panel .donut-layout { flex: 1 1 auto; align-items: center; }
 .section-grid > .panel .quality-grid { flex: 1 1 auto; align-content: stretch; }
 /* Todas as alocações: lista longa rola dentro do painel (sem esticar a linha). */
-.rank-list { max-height: 312px; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+/* A barra de rolagem do Mac flutua SOBRE o conteúdo: 16 px de folga à direita para ela não cobrir números e barras.
+   Barra fina e discreta, na cor da marca. */
+.rank-list { max-height: 312px; overflow-y: auto; overscroll-behavior: contain; padding-right: 16px;
+  scrollbar-width: thin; scrollbar-color: var(--unilog-cinza-40, #b6b7bb) transparent; }
+.rank-list::-webkit-scrollbar { width: 6px; }
+.rank-list::-webkit-scrollbar-thumb { background: var(--unilog-cinza-40, #b6b7bb); border-radius: 999px; }
+.rank-list::-webkit-scrollbar-track { background: transparent; }
 /* Listas curtas e blocos de consistência ocupam o painel inteiro (sem faixa vazia embaixo). */
-.section-grid > .panel .rank-list { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
+/* Listas curtas se espaçam pelo painel; listas longas rolam a partir do PRIMEIRO item. (space-evenly centralizava o
+   excesso e deixava os primeiros itens fora do alcance da rolagem.) Margens automáticas viram zero quando rola. */
+.section-grid > .panel .rank-list { flex: 1 1 auto; display: flex; flex-direction: column; gap: 13px; }
+.section-grid > .panel .rank-list > .rank-row { margin-block: auto; }
 .section-grid > .panel .quality-grid { grid-auto-rows: 1fr; }
 
 /* Filtros de escolha múltipla com o mesmo tamanho/altura dos campos de lista anteriores. */
