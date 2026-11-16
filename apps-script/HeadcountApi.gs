@@ -131,7 +131,10 @@ function applyPendingUserPassword() {
   var email=hcEmail_(props.getProperty('AUTH_PENDING_EMAIL'));
   var password=String(props.getProperty('AUTH_PENDING_PASSWORD')||'');
   try {
-    if(!email||password.length<10||password.length>256)throw new Error('Defina AUTH_PENDING_EMAIL e AUTH_PENDING_PASSWORD (>=10 caracteres).');
+    if(!email)throw new Error('AUTH_PENDING_EMAIL ausente. Cadastre o e-mail do usuário em Configurações do projeto > Propriedades do script.');
+    if(!/^\\S+@\\S+\\.\\S+$/.test(email))throw new Error('AUTH_PENDING_EMAIL não contém um e-mail válido.');
+    if(!password)throw new Error('AUTH_PENDING_PASSWORD ausente. Cadastre a senha provisória em Configurações do projeto > Propriedades do script.');
+    if(password.length<10||password.length>256)throw new Error('AUTH_PENDING_PASSWORD precisa ter entre 10 e 256 caracteres.');
     var user=hcAccess_(email);
     var salt=Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
     user.sheet.getRange(user.row,3,1,2).setNumberFormat('@').setValues([[hcHash_(password,salt),salt]]);
