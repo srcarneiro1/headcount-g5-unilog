@@ -128,7 +128,6 @@ function Shell({hub,refresh,logout}:{hub:HubPayload;refresh:()=>Promise<void>;lo
         <FiltersSlot.Provider value={<FiltersBar rows={hub.employees} filters={filters} setFilters={setFilters}/>}>
           <Routes><Route path="/" element={<Home rows={rows} hub={hub} filters={filters} setFilters={setFilters}/>}/><Route path="/colaboradores" element={<Employees rows={rows} filters={filters} setFilters={setFilters}/>}/><Route path="/supervisao" element={<Supervision rows={rows} filters={filters} setFilters={setFilters}/>}/><Route path="/analitico" element={<Analytics rows={rows}/>}/><Route path="/organograma" element={<OrgChart rows={rows}/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>
         </FiltersSlot.Provider>
-        <footer>HEADCOUNT G5 · UNILOG <span>Fonte operacional: Google Sheets / Cadastros</span></footer>
       </div>
     </section>
   </main>
