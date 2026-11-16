@@ -27,7 +27,7 @@ Abra `http://localhost:5173`. `dev:demo` exibe uma amostra sintética e não ace
 
 **Scripts:** `npm run dev`, `npm run dev:demo`, `npm run test`, `npm run build`, `npm run pages:dev`.
 
-Não existe `package-lock.json` porque o ambiente de geração não teve acesso ao registro npm. Execute `npm install` e versione o lockfile gerado antes de substituir o comando da CI por `npm ci`. O código ainda requer testes de instalação/build em ambiente com conectividade.
+Não existe `package-lock.json` porque o ambiente de geração não teve acesso ao registro npm. Execute `npm install` e versione o lockfile gerado antes de substituir o comando da CI por `npm ci`. O GitHub Actions validou `npm install`, `npm test` e `npm run build` com Node.js 22 em 16/11/2026. O deploy real e a integração autenticada ainda não foram homologados.
 
 ## Tecnologias
 

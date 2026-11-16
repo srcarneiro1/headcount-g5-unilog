@@ -10,7 +10,7 @@ Desenvolver o Headcount G5 como produto independente. Extra Cost Control fornece
 - Fonte real planejada: Google Sheets `COLABORADORES G5`, aba `Cadastros`.
 - Gateway `/api/bootstrap` autentica no Supabase, consulta autorização com RLS e consome Apps Script via segredo no servidor.
 - A aplicação está em **modo consulta**. Não habilitar criação/edição/exclusão sem definição expressa das regras de governança.
-- Não houve homologação do `npm install`, build e deploy neste ambiente. Primeira tarefa técnica: verificar e corrigir build, testes e tipagens, e versionar `package-lock.json`.
+- O GitHub Actions passou em `npm install`, `npm test` e `npm run build` (Node 22, 16/11/2026). O deploy e a integração com a planilha real não foram homologados. Próxima tarefa técnica: gerar e versionar `package-lock.json`, validar Pages Functions e testar a ponte.
 
 ## Invariantes
 1. Não versionar dados reais, CPF, nascimento, telefone, senhas, tokens, chaves, exports de colaboradores ou `.env`.
@@ -23,7 +23,7 @@ Desenvolver o Headcount G5 como produto independente. Extra Cost Control fornece
 8. Antes de publicar, conferir regras de RH, autorização, coleta mínima de dados, responsividade, acessibilidade e segurança.
 
 ## Próximas melhorias prioritárias
-- Validar npm install/build/test em Node 22 e gerar lockfile.
+- Gerar e versionar lockfile, migrar CI para `npm ci` e manter npm install/build/test em Node 22.
 - Refatorar `src/App.tsx` e `src/ui/common.tsx` se crescerem, extraindo shell e componentes especializados.
 - Testar a ponte do Apps Script contra implantação real, inclusive redirecionamentos, falhas e cotas.
 - Implementar paginação mobile verdadeira e virtualização para bases grandes.
