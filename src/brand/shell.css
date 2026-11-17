@@ -103,9 +103,6 @@ html, body, button, input, select, textarea, .p-component, .p-inputtext {
 .usuarios-senha { display: flex; gap: 8px; align-items: stretch; } .usuarios-senha .p-password { flex: 1 1 auto; }
 .usuarios-switch { display: flex; align-items: center; gap: 10px; }
 .usuarios-rodape { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .flex-espaco { flex: 1 1 auto; }
-.usuarios-aviso { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; background: #e8f3ec; color: #2f6b47; border: 1px solid #c8e3d1; }
-.usuarios-aviso span { flex: 1 1 auto; }
-.usuarios-erro { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 6px; background: #fbe6e7; color: #8f0510; border: 1px solid #f3c2c5; margin: 0 0 12px; }
 .usuarios-erro-texto { color: #8f0510 !important; }
 .usuarios-alvo { margin: 0; font-weight: 600; }
 
@@ -116,3 +113,9 @@ html, body, button, input, select, textarea, .p-component, .p-inputtext {
   .usuarios-tabela .p-datatable-wrapper, .quality-issues-table .p-datatable-wrapper { overflow-x: auto; }
   .usuarios-tabela table, .quality-issues-table table { min-width: 640px; }
 }
+
+/* Usuários: barra de busca + contagem (classes do Extra) e campo de busca ocupando o espaço. */
+.nx-table-search .search-wrap { width: min(420px, 100%); }
+.nx-table-search .search-wrap input { width: 100%; }
+.ui-skeleton.nx-prime-skeleton { display: grid; gap: 14px; padding: 8px 0 4px; }
+.usuarios-pagina { display: grid; gap: 18px; }

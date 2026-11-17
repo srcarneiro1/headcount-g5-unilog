@@ -20,10 +20,12 @@ const demo: UsuarioGerenciado[] = [
   {email: 'supervisao@exemplo.invalid', nome: 'Supervisão Fictícia', perfil: 'ADMIN', modulos: ['M04', 'M05'], ativo: true, senhaConfigurada: true, exigeTrocaSenha: true, ultimaAlteracao: '2026-11-12T12:00:00Z'},
   {email: 'leitura@exemplo.invalid', nome: 'Leitura Fictícia', perfil: 'VISUALIZADOR', modulos: ['M04'], ativo: false, senhaConfigurada: true, exigeTrocaSenha: false, ultimaAlteracao: '2026-11-01T12:00:00Z'},
 ]
-const falha = (m: string) => Promise.reject(new Error(m))
+const falha = (m: string) => espera(700).then(() => { throw new Error(m) })
+/** Demonstração com a espera de uma chamada real ao Google (para ver carregamento e "Salvando…" como no uso real). */
+const espera = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
 
 export function listarUsuarios(): Promise<UsuarioGerenciado[]> {
-  if (isDemo) return Promise.resolve(demo.map(u => ({...u})))
+  if (isDemo) return espera(1500).then(() => demo.map(u => ({...u})))
   return chamar<{users: UsuarioGerenciado[]}>().then(r => r.users)
 }
 
@@ -38,11 +40,11 @@ export function salvarUsuario(r: Rascunho, novo: boolean): Promise<UsuarioGerenc
       if (i >= 0) return falha('Já existe um usuário com este e-mail.')
       if ((r.password ?? '').length < 10) return falha('A senha precisa ter entre 10 e 256 caracteres.')
       const u: UsuarioGerenciado = {email, nome: r.nome.trim(), perfil: r.perfil, modulos: r.modulos, ativo: r.ativo, senhaConfigurada: true, exigeTrocaSenha: true, ultimaAlteracao: new Date().toISOString()}
-      demo.push(u); return Promise.resolve({...u})
+      demo.push(u); return espera(900).then(() => ({...u}))
     }
     if (i < 0) return falha('Usuário não encontrado.')
     demo[i] = {...demo[i], nome: r.nome.trim(), perfil: r.perfil, modulos: r.modulos, ativo: r.ativo, ultimaAlteracao: new Date().toISOString()}
-    return Promise.resolve({...demo[i]})
+    return espera(900).then(() => ({...demo[i]}))
   }
   return chamar<{user: UsuarioGerenciado}>({method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({acao: 'SALVAR', novo, ...r})}).then(x => x.user)
@@ -54,7 +56,7 @@ export function redefinirSenha(email: string, password: string): Promise<Usuario
     if (!u) return falha('Usuário não encontrado.')
     if (password.length < 10) return falha('A senha precisa ter entre 10 e 256 caracteres.')
     Object.assign(u, {senhaConfigurada: true, exigeTrocaSenha: true, ultimaAlteracao: new Date().toISOString()})
-    return Promise.resolve({...u})
+    return espera(900).then(() => ({...u}))
   }
   return chamar<{user: UsuarioGerenciado}>({method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({acao: 'REDEFINIR_SENHA', email, password})}).then(x => x.user)
