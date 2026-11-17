@@ -6,7 +6,8 @@ export interface GatewayEnv {
 export class GatewayError extends Error {
   constructor(message:string,readonly code:'CONFIG'|'UPSTREAM'|'DENIED'='UPSTREAM'){super(message)}
 }
-export async function gatewayPost<T>(env:GatewayEnv,action:'LOGIN'|'HEADCOUNT_READ',input:Record<string,unknown>):Promise<T> {
+export type GatewayAction='LOGIN'|'HEADCOUNT_READ'|'USERS_LIST'|'USER_SAVE'|'USER_RESET_PASSWORD'
+export async function gatewayPost<T>(env:GatewayEnv,action:GatewayAction,input:Record<string,unknown>):Promise<T> {
   if(!env.APPS_SCRIPT_URL||!env.APPS_SCRIPT_GATEWAY_TOKEN)throw new GatewayError('Integração Apps Script não configurada.','CONFIG')
   let url:URL
   try{url=new URL(env.APPS_SCRIPT_URL)}catch{throw new GatewayError('Endereço da ponte inválido.','CONFIG')}

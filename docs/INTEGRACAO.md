@@ -42,3 +42,17 @@ Antes de executar a função, preencha na aba `CAD_USUARIOS` os campos `PERFIL` 
 **Sequência:** salve as duas propriedades, execute `applyPendingUserPassword()` no editor e verifique que `SENHA_HASH`, `SALT`, `EXIGE_TROCA_SENHA` e `ULTIMA_ALTERACAO` foram preenchidas. As propriedades `AUTH_PENDING_*` são removidas pela função mesmo que ela falhe; em caso de erro, cadastre **novamente ambas** antes de repetir. O script mais recente indica qual propriedade está ausente, mas as mudanças no GitHub só chegam ao Apps Script depois que o arquivo do projeto for atualizado manualmente.
 
 Os nomes `AUTH_PENDING_EMAIL` e `AUTH_PENDING_PASSWORD` **não** são variáveis do Cloudflare. Já os segredos de integração do Cloudflare são `APPS_SCRIPT_URL`, `APPS_SCRIPT_GATEWAY_TOKEN` e `APP_SESSION_SECRET`.
+
+## Gestão de usuários pela tela (Usuários)
+Disponível para **OWNER** e **ADMIN** (menu ADMINISTRAÇÃO → Usuários), no mesmo modelo do Extra Cost:
+1. **Novo usuário:** nome, e-mail, perfil, módulos e **senha inicial** (mínimo 10 caracteres; botão "Gerar" cria uma
+   senha forte). Envie o e-mail e a senha à pessoa: no primeiro acesso ela é obrigada a criar a própria senha.
+2. **Editar:** nome, perfil, módulos e status (o e-mail identifica a conta e não muda).
+3. **Redefinir senha:** nova senha temporária com confirmação; a troca volta a ser exigida no próximo acesso.
+
+Regras (conferidas no Apps Script a cada pedido, não só na tela): somente OWNER/ADMIN ativos; ADMIN não cria, altera
+nem redefine a senha de um OWNER; ninguém desativa nem altera o próprio perfil; e-mail único. Só o hash da senha
+é gravado em CAD_USUARIOS. Rotas: `GET/POST /api/usuarios` → ações `USERS_LIST`, `USER_SAVE`, `USER_RESET_PASSWORD`.
+
+A função manual `applyPendingUserPassword` continua disponível só para o **primeiro OWNER** (antes de existir alguém
+que use a tela).

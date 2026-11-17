@@ -7,6 +7,7 @@ import {Password} from 'primereact/password'
 import {Skeleton} from 'primereact/skeleton'
 import {demoHub} from './data/demo'
 import {BrandBackdrop} from './brand/BrandBackdrop'
+import {Users} from './pages/Users'
 import {Avatar} from 'primereact/avatar'
 import {fetchHub} from './lib/api'
 import {AuthError,getCurrentUser,isDemo,login,logout as endSession,type AuthUser} from './lib/auth'
@@ -91,7 +92,9 @@ function Shell({hub,refresh,logout}:{hub:HubPayload;refresh:()=>Promise<void>;lo
   const location=useLocation(),rows=useMemo(()=>filterEmployees(hub.employees,filters),[hub.employees,filters])
   useEffect(()=>setDrawer(false),[location.pathname])
   async function doRefresh(){setBusy(true);try{await refresh()}finally{setBusy(false)}}
-  const pagina=navItems.find(item=>item.path==='/'?location.pathname==='/':location.pathname.startsWith(item.path))?.label||'Visão geral'
+  // Gestão de usuários: só OWNER e ADMIN (o Apps Script reconfere na planilha a cada pedido).
+  const gestor=hub.profile.role==='OWNER'||hub.profile.role==='ADMIN'
+  const pagina=location.pathname.startsWith('/usuarios')?'Usuários':navItems.find(item=>item.path==='/'?location.pathname==='/':location.pathname.startsWith(item.path))?.label||'Visão geral'
   const nome=hub.profile.name||hub.profile.email
   const modulos=hub.profile.modules.includes('*')?'Todos os módulos':hub.profile.modules.length?hub.profile.modules.join(', '):'Sem módulos'
   return <main className={`nx-app ${collapsed?'is-collapsed':''}`}>
@@ -104,6 +107,8 @@ function Shell({hub,refresh,logout}:{hub:HubPayload;refresh:()=>Promise<void>;lo
       </div>
       <nav className="nx-navigation" aria-label="Navegação principal">
         {navItems.map(item=><NavLink key={item.path} to={item.path} end={item.path==='/'} title={item.label} className={({isActive})=>`nx-nav-item ${isActive?'is-active':''}`}><i className={`pi ${item.icon}`}/><span>{item.label}</span></NavLink>)}
+        {gestor&&<div className="nx-admin-group"><span className="nx-nav-caption">ADMINISTRAÇÃO</span>
+          <NavLink to="/usuarios" title="Usuários" className={({isActive})=>`nx-nav-item ${isActive?'is-active':''}`}><i className="pi pi-user-edit"/><span>Usuários</span></NavLink></div>}
       </nav>
       <div className="nx-user-card">
         <Avatar label={nome.slice(0,1).toUpperCase()} shape="circle" className="nx-avatar"/>
@@ -124,9 +129,9 @@ function Shell({hub,refresh,logout}:{hub:HubPayload;refresh:()=>Promise<void>;lo
       </header>
       <div className="content">
         {isDemo&&<div className="demo-ribbon"><i className="pi pi-info-circle"/><strong>Ambiente de demonstração</strong> — dados inteiramente fictícios. Não representam o quadro real G5.</div>}
-        <div className="snapshot-bar"><span><i className="pi pi-calendar"/> Base: {fmtDate(hub.updatedAt)}</span><span><i className="pi pi-database"/> {countFmt.format(hub.employees.length)} matrículas acessíveis</span></div>
+        {!location.pathname.startsWith('/usuarios')&&<div className="snapshot-bar"><span><i className="pi pi-calendar"/> Base: {fmtDate(hub.updatedAt)}</span><span><i className="pi pi-database"/> {countFmt.format(hub.employees.length)} matrículas acessíveis</span></div>}
         <FiltersSlot.Provider value={<FiltersBar rows={hub.employees} filters={filters} setFilters={setFilters}/>}>
-          <Routes><Route path="/" element={<Home rows={rows} hub={hub} filters={filters} setFilters={setFilters}/>}/><Route path="/colaboradores" element={<Employees rows={rows} filters={filters} setFilters={setFilters}/>}/><Route path="/supervisao" element={<Supervision rows={rows} filters={filters} setFilters={setFilters}/>}/><Route path="/analitico" element={<Analytics rows={rows}/>}/><Route path="/organograma" element={<OrgChart rows={rows}/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>
+          <Routes><Route path="/" element={<Home rows={rows} hub={hub} filters={filters} setFilters={setFilters}/>}/><Route path="/colaboradores" element={<Employees rows={rows} filters={filters} setFilters={setFilters}/>}/><Route path="/supervisao" element={<Supervision rows={rows} filters={filters} setFilters={setFilters}/>}/><Route path="/analitico" element={<Analytics rows={rows}/>}/><Route path="/organograma" element={<OrgChart rows={rows}/>}/><Route path="/usuarios" element={gestor?<Users meuEmail={hub.profile.email} meuPerfil={hub.profile.role} modulosDisponiveis={[...new Set(hub.employees.map(e=>e.module).filter(Boolean))].sort()}/>:<Navigate to="/" replace/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>
         </FiltersSlot.Provider>
       </div>
     </section>

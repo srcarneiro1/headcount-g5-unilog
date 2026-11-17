@@ -18,8 +18,13 @@ function doPost(e) {
     var action = String(body.action || '').trim().toUpperCase();
     if(action === 'LOGIN') return hcJson_({ok:true,data:hcLogin_(body)});
     if(action === 'HEADCOUNT_READ') return hcJson_(hcRead_(body));
+    if(action === 'USERS_LIST') return hcJson_({ok:true,data:hcUsersList_(body)});
+    if(action === 'USER_SAVE') return hcJson_({ok:true,data:hcUserSave_(body)});
+    if(action === 'USER_RESET_PASSWORD') return hcJson_({ok:true,data:hcUserResetPassword_(body)});
     return hcJson_({ok:false,error:'Ação desconhecida.'});
   } catch(err) {
+    // Mensagens de validação da gestão de usuários são seguras para exibir; as demais ficam genéricas.
+    if(err && err.hcPublic) return hcJson_({ok:false,error:err.message});
     console.error('Headcount gateway: ' + (err && err.name ? err.name : 'Error'));
     return hcJson_({ok:false,error:'Operação recusada ou indisponível.'});
   }
@@ -146,4 +151,90 @@ function applyPendingUserPassword() {
     props.deleteProperty('AUTH_PENDING_EMAIL');
     props.deleteProperty('AUTH_PENDING_PASSWORD');
   }
+}
+
+/* ============================== Gestão de usuários (tela Usuários, como no Extra Cost) ==============================
+ * Só OWNER e ADMIN (conferido na planilha a cada pedido). ADMIN não cria nem altera OWNER. Ninguém desativa ou
+ * rebaixa a si mesmo. A senha inicial/redefinida é gravada com hash (mesmo do login) e exige troca no primeiro acesso.
+ */
+var HC_GESTORES = ['OWNER','ADMIN'];
+var HC_PERFIS = ['OWNER','ADMIN','VISUALIZADOR'];
+function hcPublicError_(message) { var e=new Error(message); e.hcPublic=true; return e; }
+function hcUsersSheet_() {
+  var sheet=hcWorkbook_().getSheetByName('CAD_USUARIOS');
+  if(!sheet)throw hcPublicError_('Aba CAD_USUARIOS não encontrada. Execute setupHeadcountAuthSheet.');
+  var headers=sheet.getRange(1,1,1,HC_HEADERS.length).getDisplayValues()[0];
+  if(HC_HEADERS.some(function(x,i){return x!==hcUpper_(headers[i]);}))throw hcPublicError_('Cabeçalhos da aba CAD_USUARIOS diferentes do esperado.');
+  return sheet;
+}
+function hcUserRows_(sheet) {
+  if(sheet.getLastRow()<2)return [];
+  var n=sheet.getLastRow()-1, shown=sheet.getRange(2,1,n,HC_HEADERS.length).getDisplayValues(), raw=sheet.getRange(2,9,n,1).getValues();
+  return shown.map(function(r,i){return {row:i+2,email:hcEmail_(r[0]),nome:hcText_(r[1]),hash:hcText_(r[2]),salt:hcText_(r[3]),perfil:hcUpper_(r[4]),
+    modulos:hcModules_(r[5]),ativo:hcActive_(r[6]),exigeTroca:hcActive_(r[7]),alterado:raw[i][0] instanceof Date?raw[i][0].toISOString():hcText_(r[8])};})
+    .filter(function(u){return u.email;});
+}
+function hcGestor_(body) {
+  var actor;
+  try { actor=hcAccess_(hcEmail_(body.actorEmail)); } catch(e) { throw hcPublicError_('Seu acesso não permite gerenciar usuários.'); }
+  if(HC_GESTORES.indexOf(actor.role)<0)throw hcPublicError_('Somente OWNER e ADMIN gerenciam usuários.');
+  return actor;
+}
+function hcPublicUser_(u) {
+  return {email:u.email,nome:u.nome,perfil:u.perfil,modulos:u.modulos,ativo:u.ativo,senhaConfigurada:!!(u.hash&&u.salt),exigeTrocaSenha:u.exigeTroca,ultimaAlteracao:u.alterado};
+}
+function hcUsersList_(body) {
+  hcGestor_(body);
+  return hcUserRows_(hcUsersSheet_()).map(hcPublicUser_);
+}
+function hcNovaSenha_(password) {
+  var p=String(password||'');
+  if(p.length<10||p.length>256)throw hcPublicError_('A senha precisa ter entre 10 e 256 caracteres.');
+  var salt=Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
+  return {hash:hcHash_(p,salt),salt:salt};
+}
+function hcUserSave_(body) {
+  var lock=LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    var actor=hcGestor_(body), sheet=hcUsersSheet_(), users=hcUserRows_(sheet);
+    var email=hcEmail_(body.email), nome=hcText_(body.nome), perfil=hcUpper_(body.perfil), modulos=hcModules_([].concat(body.modulos||[]).join(';'));
+    var ativo=body.ativo!==false, novo=body.novo===true;
+    if(!/^\S+@\S+\.\S+$/.test(email)||email.length>180)throw hcPublicError_('Informe um e-mail válido.');
+    if(!nome||nome.length>120)throw hcPublicError_('Informe o nome (até 120 caracteres).');
+    if(HC_PERFIS.indexOf(perfil)<0)throw hcPublicError_('Perfil inválido.');
+    if(!modulos.length)throw hcPublicError_('Selecione ao menos um módulo (ou "Todos os módulos").');
+    if(perfil==='OWNER'&&actor.role!=='OWNER')throw hcPublicError_('Somente um OWNER pode cadastrar ou promover outro OWNER.');
+    var existentes=users.filter(function(u){return u.email===email;});
+    if(existentes.length>1)throw hcPublicError_('E-mail duplicado na aba CAD_USUARIOS. Corrija a planilha antes de continuar.');
+    var atual=existentes[0];
+    if(novo) {
+      if(atual)throw hcPublicError_('Já existe um usuário com este e-mail.');
+      var senha=hcNovaSenha_(body.password);
+      var row=sheet.getLastRow()+1;
+      sheet.getRange(row,1,1,4).setNumberFormat('@');
+      sheet.getRange(row,1,1,HC_HEADERS.length).setValues([[email,nome,senha.hash,senha.salt,perfil,modulos.join(';'),ativo?'SIM':'NAO','SIM',new Date()]]);
+      return hcPublicUser_(hcUserRows_(sheet).filter(function(u){return u.email===email;})[0]);
+    }
+    if(!atual)throw hcPublicError_('Usuário não encontrado.');
+    if(atual.perfil==='OWNER'&&actor.role!=='OWNER')throw hcPublicError_('Somente um OWNER pode alterar outro OWNER.');
+    if(email===actor.email&&(!ativo||perfil!==actor.role))throw hcPublicError_('Você não pode desativar nem alterar o seu próprio perfil.');
+    sheet.getRange(atual.row,2).setValue(nome);
+    sheet.getRange(atual.row,5,1,3).setValues([[perfil,modulos.join(';'),ativo?'SIM':'NAO']]);
+    sheet.getRange(atual.row,9).setValue(new Date());
+    return hcPublicUser_(hcUserRows_(sheet).filter(function(u){return u.email===email;})[0]);
+  } finally { lock.releaseLock(); }
+}
+function hcUserResetPassword_(body) {
+  var lock=LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    var actor=hcGestor_(body), sheet=hcUsersSheet_(), email=hcEmail_(body.email);
+    var alvo=hcUserRows_(sheet).filter(function(u){return u.email===email;});
+    if(alvo.length!==1)throw hcPublicError_(alvo.length?'E-mail duplicado na aba CAD_USUARIOS.':'Usuário não encontrado.');
+    if(alvo[0].perfil==='OWNER'&&actor.role!=='OWNER')throw hcPublicError_('Somente um OWNER pode redefinir a senha de outro OWNER.');
+    var senha=hcNovaSenha_(body.password);
+    sheet.getRange(alvo[0].row,3,1,2).setNumberFormat('@').setValues([[senha.hash,senha.salt]]);
+    sheet.getRange(alvo[0].row,8).setValue('SIM');
+    sheet.getRange(alvo[0].row,9).setValue(new Date());
+    return hcPublicUser_(hcUserRows_(sheet).filter(function(u){return u.email===email;})[0]);
+  } finally { lock.releaseLock(); }
 }

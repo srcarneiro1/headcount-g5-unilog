@@ -92,3 +92,27 @@ html, body, button, input, select, textarea, .p-component, .p-inputtext {
 .p-paginator .p-dropdown { height: 40px; align-items: center; border-radius: 6px; margin-left: 8px; }
 .p-paginator .p-dropdown .p-dropdown-label { display: flex; align-items: center; height: 100%; padding: 0 10px; font-size: 13px; line-height: 1; }
 .p-paginator .p-dropdown .p-dropdown-trigger { height: 100%; }
+
+/* Usuários (igual ao Extra): célula com nome e e-mail, formulário em coluna, aviso de sucesso e erros. */
+.usuario-celula { display: grid; gap: 2px; } .usuario-celula small { color: #6d6e78; }
+.usuarios-form { display: grid; gap: 14px; }
+.usuarios-form label { display: grid; gap: 6px; } .usuarios-form label > span { font-size: 11px; font-weight: 600; color: #6d6e78; }
+.usuarios-form small { color: #6d6e78; font-size: 11px; }
+.usuarios-form .p-inputtext, .usuarios-form .p-dropdown, .usuarios-form .p-multiselect, .usuarios-form .p-password, .usuarios-form .p-password input { width: 100%; }
+.usuarios-form .p-password .p-icon-field { flex: 1 1 auto; width: 100%; }
+.usuarios-senha { display: flex; gap: 8px; align-items: stretch; } .usuarios-senha .p-password { flex: 1 1 auto; }
+.usuarios-switch { display: flex; align-items: center; gap: 10px; }
+.usuarios-rodape { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .flex-espaco { flex: 1 1 auto; }
+.usuarios-aviso { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; background: #e8f3ec; color: #2f6b47; border: 1px solid #c8e3d1; }
+.usuarios-aviso span { flex: 1 1 auto; }
+.usuarios-erro { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 6px; background: #fbe6e7; color: #8f0510; border: 1px solid #f3c2c5; margin: 0 0 12px; }
+.usuarios-erro-texto { color: #8f0510 !important; }
+.usuarios-alvo { margin: 0; font-weight: 600; }
+
+/* No celular, .employee-table é escondida (Colaboradores vira cartões). Usuários e Pendências na origem não têm
+   cartões: continuam visíveis e rolam para o lado dentro do próprio quadro. */
+@media (max-width: 690px) {
+  .employee-table.usuarios-tabela, .employee-table.quality-issues-table { display: block; }
+  .usuarios-tabela .p-datatable-wrapper, .quality-issues-table .p-datatable-wrapper { overflow-x: auto; }
+  .usuarios-tabela table, .quality-issues-table table { min-width: 640px; }
+}

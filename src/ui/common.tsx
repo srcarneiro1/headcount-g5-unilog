@@ -33,4 +33,4 @@ export function FiltersBar({rows,filters,setFilters}:{rows:Employee[];filters:Fi
 /** Filtros do quadro, encaixados logo abaixo do título de cada página (como no Extra: título → filtros → conteúdo). */
 export const FiltersSlot=createContext<React.ReactNode>(null)
 /** Cabeçalho de página — mesma marcação do Extra Cost (sobrelinha, título, descrição e ações). */
-export function Title({title,subtitle,action}:{title:string;subtitle:string;action?:React.ReactNode}){const filtros=useContext(FiltersSlot);return <><div className="dashboard-page-heading"><div><span className="ui-eyebrow">GESTÃO DE PESSOAS</span><h1>{title}</h1><p>{subtitle}</p></div>{action&&<div className="dashboard-page-actions">{action}</div>}</div>{filtros}</>}
+export function Title({title,subtitle,action,semFiltros}:{title:string;subtitle:string;action?:React.ReactNode;semFiltros?:boolean}){const filtros=useContext(FiltersSlot);return <><div className="dashboard-page-heading"><div><span className="ui-eyebrow">GESTÃO DE PESSOAS</span><h1>{title}</h1><p>{subtitle}</p></div>{action&&<div className="dashboard-page-actions">{action}</div>}</div>{!semFiltros&&filtros}</>}
